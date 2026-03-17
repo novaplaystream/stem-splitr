@@ -1,0 +1,4 @@
+demucs
+librosa
+numpy
+soundfile
