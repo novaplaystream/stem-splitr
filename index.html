@@ -1,0 +1,185 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stem‑Splitr</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Space+Mono:wght@400;700&display=swap');
+
+    :root {
+      --bg: #0a0c12;
+      --bg2: #111827;
+      --ink: #e8f0ff;
+      --muted: #a9b6cc;
+      --accent: #ffb347;
+      --accent2: #7dd3fc;
+      --card: rgba(255, 255, 255, 0.06);
+      --stroke: rgba(255, 255, 255, 0.12);
+      --radius: 20px;
+      --shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+    body {
+      font-family: "Unbounded", system-ui, sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    .page {
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 400px at 10% -5%, rgba(125, 211, 252, 0.18), transparent 60%),
+        radial-gradient(700px 400px at 90% 0%, rgba(255, 179, 71, 0.18), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 20px 80px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 12px;
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    h1 {
+      font-size: clamp(34px, 4vw, 62px);
+      margin: 14px 0 12px;
+      line-height: 1.05;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 18px;
+      margin: 0 0 26px;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      border: none;
+      text-decoration: none;
+      color: #0a0c12;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .cta:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+    .hero-card {
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .mono {
+      font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      color: #cfe3ff;
+      white-space: pre-wrap;
+    }
+
+    .grid {
+      margin-top: 40px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .card h3 { margin: 6px 0 8px; font-size: 16px; }
+    .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .note {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer {
+      margin-top: 48px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="wrap">
+      <div class="badge">Free • Open‑Source • Demucs + librosa</div>
+      <div class="hero">
+        <div>
+          <h1>Split stems fast. Find tempo and key.</h1>
+          <p class="sub">One‑click run on Google Colab. Upload a song, get clean stems, plus BPM and key estimate.</p>
+          <a class="cta" href="https://colab.research.google.com/github/novaplaystream/stem-splitr/blob/main/stem_splitter_colab.ipynb" target="_blank" rel="noreferrer">
+            Open in Colab
+          </a>
+          <div class="note">Note: Stem splitting runs on Colab cloud. Browser UI cannot run ML locally.</div>
+        </div>
+        <div class="hero-card">
+          <div style="font-weight:600; margin-bottom:8px;">Example Output</div>
+          <div class="mono">Tempo: 124.8 BPM
+Key: A minor
+Stems: vocals • drums • bass • other</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Studio‑Grade Separation</h3>
+          <p>Demucs isolates vocals, drums, bass, and instruments with high fidelity.</p>
+        </div>
+        <div class="card">
+          <h3>Tempo + Key Detection</h3>
+          <p>Chroma analysis estimates BPM and key from your audio.</p>
+        </div>
+        <div class="card">
+          <h3>100% Free Stack</h3>
+          <p>MIT license. No subscriptions, no paywalls.</p>
+        </div>
+      </div>
+
+      <div class="footer">Built by NovaPlay • UI v3</div>
+    </div>
+  </div>
+</body>
+</html>
