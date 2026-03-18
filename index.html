@@ -215,6 +215,18 @@
       color: var(--muted);
     }
 
+    .stem .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn.small {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
     .metric {
       display: inline-flex;
       gap: 10px;
@@ -289,8 +301,16 @@ Stems: vocals  drums  bass  other</div>
         <div class="card">
           <h3>Result</h3>
           <div class="row">
-            <span class="metric" id="tempoChip">Tempo: </span>
-            <span class="metric" id="keyChip">Key: </span>
+            <span class="metric" id="tempoChip">Tempo: —</span>
+            <span class="metric" id="keyChip">Key: —</span>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <input id="bpmInput" class="btn" style="max-width:140px;" type="number" step="0.1" placeholder="BPM override" />
+            <button class="btn" id="applyBpmBtn">Apply BPM</button>
+            <label class="btn" style="gap:6px;">
+              <input type="checkbox" id="showMetrics" checked />
+              Show BPM/Scale
+            </label>
           </div>
           <div class="results" id="results"></div>
           <div class="status" id="hint">Upload a file to see stems.</div>
@@ -332,8 +352,14 @@ Stems: vocals  drums  bass  other</div>
     const hint = document.getElementById("hint");
     const apiInput = document.getElementById("apiInput");
     const saveApiBtn = document.getElementById("saveApiBtn");
+    const bpmInput = document.getElementById("bpmInput");
+    const applyBpmBtn = document.getElementById("applyBpmBtn");
+    const showMetrics = document.getElementById("showMetrics");
 
     let currentFile = null;
+    let originalTempo = null;
+    let originalKey = null;
+    let originalScale = null;
 
     function setStatus(text) {
       statusLabel.textContent = text;
@@ -354,8 +380,12 @@ Stems: vocals  drums  bass  other</div>
 
     function clearResults() {
       results.innerHTML = "";
-      tempoChip.textContent = "Tempo: ";
-      keyChip.textContent = "Key: ";
+      originalTempo = null;
+      originalKey = null;
+      originalScale = null;
+      bpmInput.value = "";
+      tempoChip.textContent = "Tempo: —";
+      keyChip.textContent = "Key: —";
       hint.textContent = "Upload a file to see stems.";
       setStatus("Waiting");
     }
@@ -373,10 +403,46 @@ Stems: vocals  drums  bass  other</div>
       card.className = "stem";
       card.innerHTML = `
         <h4>${name}</h4>
-        <audio controls src="${safeUrl}"></audio>
-        <a class="btn" href="${safeUrl}" download>Download</a>
+        <audio src="${safeUrl}"></audio>
+        <div class="actions">
+          <button class="btn small" data-action="toggle">Play</button>
+          <a class="btn small" href="${safeUrl}" download>Download</a>
+          <button class="btn small" data-action="delete">Delete</button>
+        </div>
       `;
+      const audio = card.querySelector("audio");
+      const toggleBtn = card.querySelector("[data-action='toggle']");
+      const deleteBtn = card.querySelector("[data-action='delete']");
+      toggleBtn.addEventListener("click", () => {
+        if (audio.paused) {
+          audio.play();
+          toggleBtn.textContent = "Pause";
+        } else {
+          audio.pause();
+          toggleBtn.textContent = "Play";
+        }
+      });
+      audio.addEventListener("ended", () => {
+        toggleBtn.textContent = "Play";
+      });
+      deleteBtn.addEventListener("click", () => card.remove());
       results.appendChild(card);
+    }
+
+    function updateMetricsDisplay() {
+      const bpmOverride = parseFloat(bpmInput.value);
+      const bpm = Number.isFinite(bpmOverride) ? bpmOverride : originalTempo;
+      const key = originalKey && originalScale ? `${originalKey} ${originalScale}` : null;
+
+      if (showMetrics.checked) {
+        tempoChip.style.display = "inline-flex";
+        keyChip.style.display = "inline-flex";
+        tempoChip.textContent = bpm ? `Tempo: ${bpm.toFixed(1)} BPM` : "Tempo: —";
+        keyChip.textContent = key ? `Key: ${key}` : "Key: —";
+      } else {
+        tempoChip.style.display = "none";
+        keyChip.style.display = "none";
+      }
     }
 
     async function splitFile() {
@@ -394,8 +460,10 @@ Stems: vocals  drums  bass  other</div>
         setStatus("Processing...");
         const data = await res.json();
 
-        tempoChip.textContent = `Tempo: ${data.tempo_bpm?.toFixed?.(1) ?? data.tempo_bpm ?? ""} BPM`;
-        keyChip.textContent = `Key: ${data.key ?? ""} ${data.scale ?? ""}`.trim();
+        originalTempo = data.tempo_bpm ?? null;
+        originalKey = data.key ?? null;
+        originalScale = data.scale ?? null;
+        updateMetricsDisplay();
 
         results.innerHTML = "";
         (data.stems || []).forEach((stem) => renderStem(stem.name, stem.url));
@@ -427,6 +495,8 @@ Stems: vocals  drums  bass  other</div>
       localStorage.setItem("api_base", API_BASE);
       setStatus("API saved");
     });
+    applyBpmBtn.addEventListener("click", () => updateMetricsDisplay());
+    showMetrics.addEventListener("change", () => updateMetricsDisplay());
 
     dropZone.addEventListener("dragover", (e) => {
       e.preventDefault();
