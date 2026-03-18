@@ -1,51 +1,45 @@
-ï»¿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Stemâ€‘Splitr</title>
+  <title>Stem Splitter</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Space+Mono:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap');
 
     :root {
-      --bg: #0a0c12;
-      --bg2: #111827;
-      --ink: #e8f0ff;
-      --muted: #a9b6cc;
-      --accent: #ffb347;
-      --accent2: #7dd3fc;
-      --card: rgba(255, 255, 255, 0.06);
+      --bg: #0b0c10;
+      --bg2: #12151c;
+      --ink: #f2f5ff;
+      --muted: #a7b1c2;
+      --accent: #ffb86b;
+      --accent2: #7cf0c5;
+      --accent3: #6cb4ff;
+      --card: rgba(255, 255, 255, 0.05);
       --stroke: rgba(255, 255, 255, 0.12);
-      --radius: 20px;
-      --shadow: 0 20px 60px rgba(0,0,0,0.4);
+      --radius: 18px;
+      --shadow: 0 20px 60px rgba(0,0,0,0.35);
     }
 
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
-    body {
-      font-family: "Unbounded", system-ui, sans-serif;
-      line-height: 1.5;
-      overflow-x: hidden;
-    }
+    body { font-family: "Space Grotesk", system-ui, sans-serif; line-height: 1.5; overflow-x: hidden; }
 
     .page {
       min-height: 100vh;
       background:
-        radial-gradient(900px 400px at 10% -5%, rgba(125, 211, 252, 0.18), transparent 60%),
-        radial-gradient(700px 400px at 90% 0%, rgba(255, 179, 71, 0.18), transparent 60%),
+        radial-gradient(900px 500px at 8% -10%, rgba(108, 180, 255, 0.22), transparent 60%),
+        radial-gradient(700px 400px at 92% 0%, rgba(255, 184, 107, 0.2), transparent 60%),
+        radial-gradient(600px 400px at 60% 80%, rgba(124, 240, 197, 0.15), transparent 60%),
         linear-gradient(180deg, var(--bg), var(--bg2));
     }
 
-    .wrap {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 60px 20px 80px;
-    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 60px 20px 80px; }
 
     .hero {
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
-      gap: 28px;
+      gap: 26px;
       align-items: center;
     }
 
@@ -62,14 +56,15 @@
     }
 
     h1 {
-      font-size: clamp(34px, 4vw, 62px);
+      font-family: "Sora", system-ui, sans-serif;
+      font-size: clamp(34px, 4.4vw, 64px);
       margin: 14px 0 12px;
       line-height: 1.05;
     }
 
     .sub {
       color: var(--muted);
-      font-size: 18px;
+      font-size: 17px;
       margin: 0 0 26px;
     }
 
@@ -136,36 +131,172 @@
       text-align: center;
     }
 
+    .uploader {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border-radius: var(--radius);
+      border: 1px dashed rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .drop {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 22px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: rgba(10, 12, 16, 0.65);
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .drop.dragover {
+      border-color: var(--accent2);
+      transform: translateY(-2px);
+    }
+
+    .drop strong { font-size: 16px; }
+    .drop small { color: var(--muted); }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.04);
+      color: var(--ink);
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      border: none;
+      color: #0a0c12;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      box-shadow: var(--shadow);
+    }
+
+    .status {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .results {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .stem {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .stem h4 {
+      margin: 0;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .metric {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.05);
+      font-size: 12px;
+      color: var(--ink);
+    }
+
+    .split-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 26px;
+    }
+
     @media (max-width: 900px) {
       .hero { grid-template-columns: 1fr; }
       .grid { grid-template-columns: 1fr; }
+      .split-layout { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="wrap">
-      <div class="badge">Free â€¢ Openâ€‘Source â€¢ Demucs + librosa</div>
+      <div class="badge">Local UI • Server-Side Split • Demucs + librosa</div>
       <div class="hero">
         <div>
-          <h1>Split stems fast. Find tempo and key.</h1>
-          <p class="sub">Oneâ€‘click run on Google Colab. Upload a song, get clean stems, plus BPM and key estimate.</p>
-          <a class="cta" href="https://colab.research.google.com/github/novaplaystream/stem-splitr/blob/main/stem_splitter_colab.ipynb" target="_blank" rel="noreferrer">
-            Open in Colab
-          </a>
-          <div class="note">Note: Stem splitting runs on Colab cloud. Browser UI cannot run ML locally.</div>
+          <h1>Upload a song. Get stems right here.</h1>
+          <p class="sub">No Colab download. Upload once, and the stems plus tempo + key appear on this page.</p>
+          <div class="row">
+            <button class="btn primary" id="pickBtn">Upload Song</button>
+            <button class="btn" id="demoBtn">Try Demo</button>
+          </div>
+          <div class="note">Server required: this UI expects an API endpoint at `/api/split`.</div>
         </div>
         <div class="hero-card">
-          <div style="font-weight:600; margin-bottom:8px;">Example Output</div>
+          <div style="font-weight:600; margin-bottom:8px;">What You Get</div>
           <div class="mono">Tempo: 124.8 BPM
 Key: A minor
-Stems: vocals â€¢ drums â€¢ bass â€¢ other</div>
+Stems: vocals • drums • bass • other</div>
+        </div>
+      </div>
+
+      <div class="split-layout">
+        <div class="card">
+          <h3>Upload & Split</h3>
+          <div class="uploader">
+            <div class="drop" id="dropZone">
+              <strong>Drop your song here</strong>
+              <small>MP3/WAV up to 200MB</small>
+            </div>
+            <div class="row">
+              <span class="metric" id="fileLabel">No file selected</span>
+              <span class="metric" id="statusLabel">Waiting</span>
+            </div>
+            <div class="row">
+              <button class="btn primary" id="splitBtn" disabled>Split Stems</button>
+              <button class="btn" id="clearBtn" disabled>Clear</button>
+              <input type="file" id="fileInput" accept=".mp3,.wav" hidden />
+            </div>
+          </div>
+          <div class="note">Processing happens on your server, then audio stems are streamed here.</div>
+        </div>
+        <div class="card">
+          <h3>Result</h3>
+          <div class="row">
+            <span class="metric" id="tempoChip">Tempo: —</span>
+            <span class="metric" id="keyChip">Key: —</span>
+          </div>
+          <div class="results" id="results"></div>
+          <div class="status" id="hint">Upload a file to see stems.</div>
         </div>
       </div>
 
       <div class="grid">
         <div class="card">
-          <h3>Studioâ€‘Grade Separation</h3>
+          <h3>Studio-Grade Separation</h3>
           <p>Demucs isolates vocals, drums, bass, and instruments with high fidelity.</p>
         </div>
         <div class="card">
@@ -173,13 +304,131 @@ Stems: vocals â€¢ drums â€¢ bass â€¢ other</div>
           <p>Chroma analysis estimates BPM and key from your audio.</p>
         </div>
         <div class="card">
-          <h3>100% Free Stack</h3>
-          <p>MIT license. No subscriptions, no paywalls.</p>
+          <h3>Privacy-First Flow</h3>
+          <p>Files stay on your server. No third-party upload flows or Colab tabs.</p>
         </div>
       </div>
 
-      <div class="footer">Built by NovaPlay â€¢ UI v3</div>
+      <div class="footer">Built by NovaPlay • UI v3</div>
     </div>
   </div>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const pickBtn = document.getElementById("pickBtn");
+    const splitBtn = document.getElementById("splitBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const demoBtn = document.getElementById("demoBtn");
+    const fileLabel = document.getElementById("fileLabel");
+    const statusLabel = document.getElementById("statusLabel");
+    const dropZone = document.getElementById("dropZone");
+    const results = document.getElementById("results");
+    const tempoChip = document.getElementById("tempoChip");
+    const keyChip = document.getElementById("keyChip");
+    const hint = document.getElementById("hint");
+
+    let currentFile = null;
+
+    function setStatus(text) {
+      statusLabel.textContent = text;
+    }
+
+    function setFile(file) {
+      currentFile = file;
+      if (file) {
+        fileLabel.textContent = `${file.name} • ${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+        splitBtn.disabled = false;
+        clearBtn.disabled = false;
+      } else {
+        fileLabel.textContent = "No file selected";
+        splitBtn.disabled = true;
+        clearBtn.disabled = true;
+      }
+    }
+
+    function clearResults() {
+      results.innerHTML = "";
+      tempoChip.textContent = "Tempo: —";
+      keyChip.textContent = "Key: —";
+      hint.textContent = "Upload a file to see stems.";
+      setStatus("Waiting");
+    }
+
+    function renderStem(name, url) {
+      const card = document.createElement("div");
+      card.className = "stem";
+      card.innerHTML = `
+        <h4>${name}</h4>
+        <audio controls src="${url}"></audio>
+        <a class="btn" href="${url}" download>Download</a>
+      `;
+      results.appendChild(card);
+    }
+
+    async function splitFile() {
+      if (!currentFile) return;
+      clearResults();
+      setStatus("Uploading...");
+      hint.textContent = "Splitting audio. This can take a few minutes.";
+
+      const form = new FormData();
+      form.append("file", currentFile);
+
+      try {
+        const res = await fetch("/api/split", { method: "POST", body: form });
+        if (!res.ok) throw new Error("Split failed");
+        setStatus("Processing...");
+        const data = await res.json();
+
+        tempoChip.textContent = `Tempo: ${data.tempo_bpm?.toFixed?.(1) ?? data.tempo_bpm ?? "—"} BPM`;
+        keyChip.textContent = `Key: ${data.key ?? "—"} ${data.scale ?? ""}`.trim();
+
+        results.innerHTML = "";
+        (data.stems || []).forEach((stem) => renderStem(stem.name, stem.url));
+        if ((data.stems || []).length === 0) {
+          hint.textContent = "No stems returned.";
+        } else {
+          hint.textContent = "Done. Preview or download your stems.";
+        }
+        setStatus("Complete");
+      } catch (err) {
+        setStatus("Error");
+        hint.textContent = "Split failed. Please try again.";
+      }
+    }
+
+    pickBtn.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => setFile(e.target.files[0]));
+    splitBtn.addEventListener("click", splitFile);
+    clearBtn.addEventListener("click", () => {
+      fileInput.value = "";
+      setFile(null);
+      clearResults();
+    });
+
+    demoBtn.addEventListener("click", () => {
+      tempoChip.textContent = "Tempo: 124.8 BPM";
+      keyChip.textContent = "Key: A minor";
+      results.innerHTML = "";
+      renderStem("Vocals", "assets/demo-vocals.mp3");
+      renderStem("Drums", "assets/demo-drums.mp3");
+      renderStem("Bass", "assets/demo-bass.mp3");
+      renderStem("Other", "assets/demo-other.mp3");
+      hint.textContent = "Demo mode. Hook up the API for real splits.";
+      setStatus("Demo");
+    });
+
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      const file = e.dataTransfer.files[0];
+      if (file) setFile(file);
+    });
+  </script>
 </body>
 </html>
