@@ -93,6 +93,8 @@ Or run:
 ./start_public.ps1
 ```
 
+If using ngrok, update `index.html` `API_BASE` with your ngrok URL.
+
 ## Output
 Demucs outputs stems in:
 ```

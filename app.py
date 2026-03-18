@@ -90,7 +90,7 @@ def convert_stems_to_mp3(stems_dir: Path):
         subprocess.check_call(cmd)
 
 
-def split_audio(audio_path: Path, out_dir: Path, model: str, fmt: str):
+def split_audio(audio_path: Path, out_dir: Path, model: str, fmt: str, base_url: str):
     tempo, key, scale, conf = estimate_tempo_and_key(audio_path)
     run_demucs(audio_path, out_dir, model)
 
@@ -110,7 +110,7 @@ def split_audio(audio_path: Path, out_dir: Path, model: str, fmt: str):
     for f in sorted(stem_files):
         stems.append({
             "name": f.stem.replace("_", " ").title(),
-            "url": f"/outputs/{model}/{track_name}/{f.name}",
+            "url": f"{base_url}/outputs/{model}/{track_name}/{f.name}",
         })
 
     return {
@@ -141,8 +141,10 @@ def create_app():
     def health():
         return {"ok": True}
 
-    @app.post("/api/split")
+    @app.route("/api/split", methods=["POST", "OPTIONS"])
     def api_split():
+        if request.method == "OPTIONS":
+            return ("", 204)
         if "file" not in request.files:
             return jsonify({"error": "file field missing"}), 400
 
@@ -159,12 +161,20 @@ def create_app():
         audio_path = UPLOADS_DIR / unique_name
         file.save(audio_path)
 
-        result = split_audio(audio_path, OUTPUTS_DIR, DEFAULT_MODEL, fmt="mp3")
+        base_url = request.host_url.rstrip("/")
+        result = split_audio(audio_path, OUTPUTS_DIR, DEFAULT_MODEL, fmt="mp3", base_url=base_url)
         return jsonify(result)
 
     @app.get("/outputs/<path:subpath>")
     def serve_outputs(subpath):
         return send_from_directory(OUTPUTS_DIR, subpath, as_attachment=False)
+
+    @app.after_request
+    def add_cors_headers(resp):
+        resp.headers["Access-Control-Allow-Origin"] = "*"
+        resp.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        return resp
 
     return app
 

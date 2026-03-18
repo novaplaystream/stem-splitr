@@ -234,27 +234,6 @@
       margin-top: 26px;
     }
 
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 24px;
-      transform: translateX(-50%);
-      background: rgba(20, 24, 32, 0.9);
-      border: 1px solid var(--stroke);
-      color: var(--ink);
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease, transform 0.2s ease;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-4px);
-    }
-
     @media (max-width: 900px) {
       .hero { grid-template-columns: 1fr; }
       .grid { grid-template-columns: 1fr; }
@@ -269,13 +248,12 @@
       <div class="hero">
         <div>
           <h1>Upload a song. Get stems right here.</h1>
-          <p class="sub">No Colab download. Upload once, and the stems plus tempo + key appear on this page.</p>
+          <p class="sub">Upload once, and the stems plus tempo + key appear on this page.</p>
           <div class="row">
             <button class="btn primary" id="pickBtn">Upload Song</button>
             <button class="btn" id="demoBtn">Try Demo</button>
-            <button class="btn" id="colabBtn">Run Colab (Hidden)</button>
           </div>
-          <div class="note">Colab will start in a background tab; some browsers may still briefly show it.</div>
+          <div class="note">Backend runs on your PC via public URL or same network.</div>
         </div>
         <div class="hero-card">
           <div style="font-weight:600; margin-bottom:8px;">What You Get</div>
@@ -327,7 +305,7 @@ Stems: vocals • drums • bass • other</div>
         </div>
         <div class="card">
           <h3>Privacy-First Flow</h3>
-          <p>Files stay on your server. No third-party upload flows or Colab tabs.</p>
+          <p>Files stay on your server. No third-party upload flows.</p>
         </div>
       </div>
 
@@ -335,15 +313,14 @@ Stems: vocals • drums • bass • other</div>
     </div>
   </div>
 
-  <div class="toast" id="toast">Colab run started in background tab</div>
-
   <script>
+    const API_BASE = "https://unstructured-alesia-sagely.ngrok-free.dev";
+
     const fileInput = document.getElementById("fileInput");
     const pickBtn = document.getElementById("pickBtn");
     const splitBtn = document.getElementById("splitBtn");
     const clearBtn = document.getElementById("clearBtn");
     const demoBtn = document.getElementById("demoBtn");
-    const colabBtn = document.getElementById("colabBtn");
     const fileLabel = document.getElementById("fileLabel");
     const statusLabel = document.getElementById("statusLabel");
     const dropZone = document.getElementById("dropZone");
@@ -351,20 +328,11 @@ Stems: vocals • drums • bass • other</div>
     const tempoChip = document.getElementById("tempoChip");
     const keyChip = document.getElementById("keyChip");
     const hint = document.getElementById("hint");
-    const toast = document.getElementById("toast");
-
-    const COLAB_URL = "https://colab.research.google.com/github/novaplaystream/stem-splitr/blob/main/stem_splitter_colab.ipynb";
 
     let currentFile = null;
 
     function setStatus(text) {
       statusLabel.textContent = text;
-    }
-
-    function showToast(text) {
-      toast.textContent = text;
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 1800);
     }
 
     function setFile(file) {
@@ -388,13 +356,21 @@ Stems: vocals • drums • bass • other</div>
       setStatus("Waiting");
     }
 
+    function resolveStemUrl(url) {
+      if (!url) return url;
+      if (url.startsWith("http")) return url;
+      if (url.startsWith("/")) return `${API_BASE}${url}`;
+      return url;
+    }
+
     function renderStem(name, url) {
+      const safeUrl = resolveStemUrl(url);
       const card = document.createElement("div");
       card.className = "stem";
       card.innerHTML = `
         <h4>${name}</h4>
-        <audio controls src="${url}"></audio>
-        <a class="btn" href="${url}" download>Download</a>
+        <audio controls src="${safeUrl}"></audio>
+        <a class="btn" href="${safeUrl}" download>Download</a>
       `;
       results.appendChild(card);
     }
@@ -409,7 +385,7 @@ Stems: vocals • drums • bass • other</div>
       form.append("file", currentFile);
 
       try {
-        const res = await fetch("/api/split", { method: "POST", body: form });
+        const res = await fetch(`${API_BASE}/api/split`, { method: "POST", body: form });
         if (!res.ok) throw new Error("Split failed");
         setStatus("Processing...");
         const data = await res.json();
@@ -428,16 +404,6 @@ Stems: vocals • drums • bass • other</div>
       } catch (err) {
         setStatus("Error");
         hint.textContent = "Split failed. Please try again.";
-      }
-    }
-
-    function runColabHidden() {
-      const win = window.open(COLAB_URL, "_blank", "noopener,noreferrer");
-      window.focus();
-      if (win) {
-        showToast("Colab run started in background tab");
-      } else {
-        showToast("Popup blocked. Allow popups to start Colab.");
       }
     }
 
@@ -461,8 +427,6 @@ Stems: vocals • drums • bass • other</div>
       hint.textContent = "Demo mode. Hook up the API for real splits.";
       setStatus("Demo");
     });
-
-    colabBtn.addEventListener("click", runColabHidden);
 
     dropZone.addEventListener("dragover", (e) => {
       e.preventDefault();
