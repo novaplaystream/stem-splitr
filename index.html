@@ -234,6 +234,27 @@
       margin-top: 26px;
     }
 
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      background: rgba(20, 24, 32, 0.9);
+      border: 1px solid var(--stroke);
+      color: var(--ink);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-4px);
+    }
+
     @media (max-width: 900px) {
       .hero { grid-template-columns: 1fr; }
       .grid { grid-template-columns: 1fr; }
@@ -252,8 +273,9 @@
           <div class="row">
             <button class="btn primary" id="pickBtn">Upload Song</button>
             <button class="btn" id="demoBtn">Try Demo</button>
+            <button class="btn" id="colabBtn">Run Colab (Hidden)</button>
           </div>
-          <div class="note">Server required: this UI expects an API endpoint at `/api/split`.</div>
+          <div class="note">Colab will start in a background tab; some browsers may still briefly show it.</div>
         </div>
         <div class="hero-card">
           <div style="font-weight:600; margin-bottom:8px;">What You Get</div>
@@ -313,12 +335,15 @@ Stems: vocals • drums • bass • other</div>
     </div>
   </div>
 
+  <div class="toast" id="toast">Colab run started in background tab</div>
+
   <script>
     const fileInput = document.getElementById("fileInput");
     const pickBtn = document.getElementById("pickBtn");
     const splitBtn = document.getElementById("splitBtn");
     const clearBtn = document.getElementById("clearBtn");
     const demoBtn = document.getElementById("demoBtn");
+    const colabBtn = document.getElementById("colabBtn");
     const fileLabel = document.getElementById("fileLabel");
     const statusLabel = document.getElementById("statusLabel");
     const dropZone = document.getElementById("dropZone");
@@ -326,11 +351,20 @@ Stems: vocals • drums • bass • other</div>
     const tempoChip = document.getElementById("tempoChip");
     const keyChip = document.getElementById("keyChip");
     const hint = document.getElementById("hint");
+    const toast = document.getElementById("toast");
+
+    const COLAB_URL = "https://colab.research.google.com/github/novaplaystream/stem-splitr/blob/main/stem_splitter_colab.ipynb";
 
     let currentFile = null;
 
     function setStatus(text) {
       statusLabel.textContent = text;
+    }
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1800);
     }
 
     function setFile(file) {
@@ -397,6 +431,16 @@ Stems: vocals • drums • bass • other</div>
       }
     }
 
+    function runColabHidden() {
+      const win = window.open(COLAB_URL, "_blank", "noopener,noreferrer");
+      window.focus();
+      if (win) {
+        showToast("Colab run started in background tab");
+      } else {
+        showToast("Popup blocked. Allow popups to start Colab.");
+      }
+    }
+
     pickBtn.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", (e) => setFile(e.target.files[0]));
     splitBtn.addEventListener("click", splitFile);
@@ -417,6 +461,8 @@ Stems: vocals • drums • bass • other</div>
       hint.textContent = "Demo mode. Hook up the API for real splits.";
       setStatus("Demo");
     });
+
+    colabBtn.addEventListener("click", runColabHidden);
 
     dropZone.addEventListener("dragover", (e) => {
       e.preventDefault();
