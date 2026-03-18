@@ -125,6 +125,18 @@ def split_audio(audio_path: Path, out_dir: Path, model: str, fmt: str):
 def create_app():
     app = Flask(__name__)
 
+    @app.get("/")
+    def index():
+        return send_from_directory(Path(".").resolve(), "index.html")
+
+    @app.get("/index.html")
+    def index_alias():
+        return send_from_directory(Path(".").resolve(), "index.html")
+
+    @app.get("/assets/<path:subpath>")
+    def serve_assets(subpath):
+        return send_from_directory(Path("assets").resolve(), subpath)
+
     @app.get("/api/health")
     def health():
         return {"ok": True}
