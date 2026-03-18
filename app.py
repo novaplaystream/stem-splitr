@@ -3,15 +3,26 @@ import json
 import os
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 
 import librosa
 import numpy as np
 
+try:
+    from flask import Flask, jsonify, request, send_from_directory
+    from werkzeug.utils import secure_filename
+except Exception:  # pragma: no cover
+    Flask = None
+
 # Krumhansl-Schmuckler key profiles
 MAJOR_PROFILE = np.array([6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88])
 MINOR_PROFILE = np.array([6.33, 2.68, 3.52, 5.38, 2.6, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17])
 NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+
+UPLOADS_DIR = Path("uploads")
+OUTPUTS_DIR = Path("outputs")
+DEFAULT_MODEL = "htdemucs"
 
 
 def estimate_tempo_and_key(audio_path: Path):
@@ -79,14 +90,96 @@ def convert_stems_to_mp3(stems_dir: Path):
         subprocess.check_call(cmd)
 
 
+def split_audio(audio_path: Path, out_dir: Path, model: str, fmt: str):
+    tempo, key, scale, conf = estimate_tempo_and_key(audio_path)
+    run_demucs(audio_path, out_dir, model)
+
+    track_name = audio_path.stem
+    stems_dir = out_dir / model / track_name
+
+    stem_files = list(stems_dir.glob("*.wav"))
+    if fmt == "mp3":
+        try:
+            convert_stems_to_mp3(stems_dir)
+            stem_files = list(stems_dir.glob("*.mp3")) or stem_files
+        except Exception:
+            # If ffmpeg isn't available, keep wavs
+            stem_files = stem_files
+
+    stems = []
+    for f in sorted(stem_files):
+        stems.append({
+            "name": f.stem.replace("_", " ").title(),
+            "url": f"/outputs/{model}/{track_name}/{f.name}",
+        })
+
+    return {
+        "tempo_bpm": tempo,
+        "key": key,
+        "scale": scale,
+        "confidence": conf,
+        "stems": stems,
+    }
+
+
+def create_app():
+    app = Flask(__name__)
+
+    @app.get("/api/health")
+    def health():
+        return {"ok": True}
+
+    @app.post("/api/split")
+    def api_split():
+        if "file" not in request.files:
+            return jsonify({"error": "file field missing"}), 400
+
+        file = request.files["file"]
+        if not file or file.filename == "":
+            return jsonify({"error": "no file"}), 400
+
+        UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+        OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+
+        safe_name = secure_filename(file.filename)
+        suffix = Path(safe_name).suffix or ".mp3"
+        unique_name = f"{Path(safe_name).stem}-{uuid.uuid4().hex[:6]}{suffix}"
+        audio_path = UPLOADS_DIR / unique_name
+        file.save(audio_path)
+
+        result = split_audio(audio_path, OUTPUTS_DIR, DEFAULT_MODEL, fmt="mp3")
+        return jsonify(result)
+
+    @app.get("/outputs/<path:subpath>")
+    def serve_outputs(subpath):
+        return send_from_directory(OUTPUTS_DIR, subpath, as_attachment=False)
+
+    return app
+
+
 def main():
     parser = argparse.ArgumentParser(description="Free stem splitter + tempo/key finder")
-    parser.add_argument("input", help="Input audio file (mp3 or wav)")
+    parser.add_argument("input", nargs="?", help="Input audio file (mp3 or wav)")
     parser.add_argument("--out", default="outputs", help="Output directory")
     parser.add_argument("--model", default="htdemucs", help="Demucs model name")
     parser.add_argument("--format", default="wav", choices=["wav", "mp3"], help="Output format for stems")
     parser.add_argument("--json", action="store_true", help="Print tempo/key as JSON")
+    parser.add_argument("--serve", action="store_true", help="Run API server for the frontend")
+    parser.add_argument("--host", default="0.0.0.0", help="Server host")
+    parser.add_argument("--port", default=5000, type=int, help="Server port")
     args = parser.parse_args()
+
+    if args.serve:
+        if Flask is None:
+            print("Flask is not installed. Run: pip install flask")
+            sys.exit(1)
+        app = create_app()
+        app.run(host=args.host, port=args.port, debug=False)
+        return
+
+    if not args.input:
+        print("Input file required when not using --serve")
+        sys.exit(1)
 
     audio_path = Path(args.input).expanduser().resolve()
     out_dir = Path(args.out).expanduser().resolve()
