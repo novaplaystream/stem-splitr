@@ -66,6 +66,33 @@ JSON output:
 python app.py "input_song.mp3" --json
 ```
 
+## Run (Local Web UI)
+This serves `index.html` + API from the same server.
+```bash
+pip install -r requirements.txt
+python app.py --serve --host 0.0.0.0 --port 5000
+```
+Open on same PC:
+```
+http://localhost:5000/
+```
+Open from another device on same Wi‑Fi:
+```
+http://<YOUR_PC_IP>:5000/
+```
+
+## Run (Public Temporary URL)
+Use Cloudflare Tunnel to get a temporary public URL.
+```bash
+pip install -r requirements.txt
+python app.py --serve --host 0.0.0.0 --port 5000
+cloudflared tunnel --url http://localhost:5000
+```
+Or run:
+```
+./start_public.ps1
+```
+
 ## Output
 Demucs outputs stems in:
 ```
