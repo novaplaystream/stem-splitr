@@ -244,7 +244,7 @@
 <body>
   <div class="page">
     <div class="wrap">
-      <div class="badge">Local UI • Server-Side Split • Demucs + librosa</div>
+      <div class="badge">Local UI  Server-Side Split  Demucs + librosa</div>
       <div class="hero">
         <div>
           <h1>Upload a song. Get stems right here.</h1>
@@ -259,7 +259,7 @@
           <div style="font-weight:600; margin-bottom:8px;">What You Get</div>
           <div class="mono">Tempo: 124.8 BPM
 Key: A minor
-Stems: vocals • drums • bass • other</div>
+Stems: vocals  drums  bass  other</div>
         </div>
       </div>
 
@@ -286,8 +286,8 @@ Stems: vocals • drums • bass • other</div>
         <div class="card">
           <h3>Result</h3>
           <div class="row">
-            <span class="metric" id="tempoChip">Tempo: —</span>
-            <span class="metric" id="keyChip">Key: —</span>
+            <span class="metric" id="tempoChip">Tempo: </span>
+            <span class="metric" id="keyChip">Key: </span>
           </div>
           <div class="results" id="results"></div>
           <div class="status" id="hint">Upload a file to see stems.</div>
@@ -309,12 +309,12 @@ Stems: vocals • drums • bass • other</div>
         </div>
       </div>
 
-      <div class="footer">Built by NovaPlay • UI v3</div>
+      <div class="footer">Built by NovaPlay  UI v3</div>
     </div>
   </div>
 
   <script>
-    const API_BASE = "https://unstructured-alesia-sagely.ngrok-free.dev";
+    const API_BASE = "https://nonstructured-alesia-sagely.ngrok-free.dev";
 
     const fileInput = document.getElementById("fileInput");
     const pickBtn = document.getElementById("pickBtn");
@@ -338,7 +338,7 @@ Stems: vocals • drums • bass • other</div>
     function setFile(file) {
       currentFile = file;
       if (file) {
-        fileLabel.textContent = `${file.name} • ${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+        fileLabel.textContent = `${file.name}  ${(file.size / (1024 * 1024)).toFixed(1)} MB`;
         splitBtn.disabled = false;
         clearBtn.disabled = false;
       } else {
@@ -350,8 +350,8 @@ Stems: vocals • drums • bass • other</div>
 
     function clearResults() {
       results.innerHTML = "";
-      tempoChip.textContent = "Tempo: —";
-      keyChip.textContent = "Key: —";
+      tempoChip.textContent = "Tempo: ";
+      keyChip.textContent = "Key: ";
       hint.textContent = "Upload a file to see stems.";
       setStatus("Waiting");
     }
@@ -390,8 +390,8 @@ Stems: vocals • drums • bass • other</div>
         setStatus("Processing...");
         const data = await res.json();
 
-        tempoChip.textContent = `Tempo: ${data.tempo_bpm?.toFixed?.(1) ?? data.tempo_bpm ?? "—"} BPM`;
-        keyChip.textContent = `Key: ${data.key ?? "—"} ${data.scale ?? ""}`.trim();
+        tempoChip.textContent = `Tempo: ${data.tempo_bpm?.toFixed?.(1) ?? data.tempo_bpm ?? ""} BPM`;
+        keyChip.textContent = `Key: ${data.key ?? ""} ${data.scale ?? ""}`.trim();
 
         results.innerHTML = "";
         (data.stems || []).forEach((stem) => renderStem(stem.name, stem.url));
