@@ -251,9 +251,12 @@
           <p class="sub">Upload once, and the stems plus tempo + key appear on this page.</p>
           <div class="row">
             <button class="btn primary" id="pickBtn">Upload Song</button>
-            <button class="btn" id="demoBtn">Try Demo</button>
           </div>
           <div class="note">Backend runs on your PC via public URL or same network.</div>
+          <div class="row" style="margin-top:10px;">
+            <input id="apiInput" class="btn" style="min-width:320px;" placeholder="API URL (e.g. https://xxxx.ngrok-free.dev)" />
+            <button class="btn" id="saveApiBtn">Save URL</button>
+          </div>
         </div>
         <div class="hero-card">
           <div style="font-weight:600; margin-bottom:8px;">What You Get</div>
@@ -314,13 +317,12 @@ Stems: vocals  drums  bass  other</div>
   </div>
 
   <script>
-    const API_BASE = "https://nonstructured-alesia-sagely.ngrok-free.dev";
+    let API_BASE = localStorage.getItem("api_base") || "https://nonstructured-alesia-sagely.ngrok-free.dev";
 
     const fileInput = document.getElementById("fileInput");
     const pickBtn = document.getElementById("pickBtn");
     const splitBtn = document.getElementById("splitBtn");
     const clearBtn = document.getElementById("clearBtn");
-    const demoBtn = document.getElementById("demoBtn");
     const fileLabel = document.getElementById("fileLabel");
     const statusLabel = document.getElementById("statusLabel");
     const dropZone = document.getElementById("dropZone");
@@ -328,6 +330,8 @@ Stems: vocals  drums  bass  other</div>
     const tempoChip = document.getElementById("tempoChip");
     const keyChip = document.getElementById("keyChip");
     const hint = document.getElementById("hint");
+    const apiInput = document.getElementById("apiInput");
+    const saveApiBtn = document.getElementById("saveApiBtn");
 
     let currentFile = null;
 
@@ -415,17 +419,13 @@ Stems: vocals  drums  bass  other</div>
       setFile(null);
       clearResults();
     });
-
-    demoBtn.addEventListener("click", () => {
-      tempoChip.textContent = "Tempo: 124.8 BPM";
-      keyChip.textContent = "Key: A minor";
-      results.innerHTML = "";
-      renderStem("Vocals", "assets/demo-vocals.mp3");
-      renderStem("Drums", "assets/demo-drums.mp3");
-      renderStem("Bass", "assets/demo-bass.mp3");
-      renderStem("Other", "assets/demo-other.mp3");
-      hint.textContent = "Demo mode. Hook up the API for real splits.";
-      setStatus("Demo");
+    apiInput.value = API_BASE;
+    saveApiBtn.addEventListener("click", () => {
+      const val = apiInput.value.trim();
+      if (!val) return;
+      API_BASE = val.replace(/\/+$/, "");
+      localStorage.setItem("api_base", API_BASE);
+      setStatus("API saved");
     });
 
     dropZone.addEventListener("dragover", (e) => {
